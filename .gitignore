@@ -1,0 +1,49 @@
+# ---- 图标库维护包：不上传的东西 ----
+
+# 游戏里 /aemobile dumpicons 导出的原始图标（几万张 PNG，几个 GB）
+dumps/
+**/dumps/
+
+# 导出的压缩包 / 临时解压目录
+*.7z
+*.zip
+*.rar
+*.tar
+*.gz
+
+# 建库中间产物（库本身在 AEMobileApp/assets，不在这里）
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.new
+*.tmp
+*.bak
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 本地 AI 助手 / 编辑器工作区，各家工具都会生成，一律不入库
+.opencode/
+.workbuddy/
+.workbuddy-ai/
+.codebuddy/
+.claude/
+.cursor/
+.aider*/
+.continue/
+.zed/
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 日志与临时输出
+*.log
+output/
