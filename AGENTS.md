@@ -104,7 +104,25 @@ D:/Develop/Game/AEMobildAll/
 - 单行解析（名字/图标/颜色）：`AEMobileApp/src/db.ts` 的 `resolveItem`
 - 图标渲染（水滴/纯色块/蒙版上色）：`AEMobileApp/src/components.tsx` 的 `ItemIcon`
 
-### 3.4 改在线更新逻辑
+### 3.4 给玩家做「配置包」
+
+```bash
+python make_bundle.py --ip mc.example.com \
+    --icon-source https://cdn.example.com/ae/version.json --out dist
+```
+
+产出 `dist/aemobile-config.zip`（几 KB）：玩家在 App 的「首次使用」页点「选择配置文件」导入，
+服务器地址、线路列表、图标源一次到位，再点「下载图标库」。
+
+### 3.5 给玩家做「内置图标包的 APK」
+
+```bash
+python embed_pack.py            # 把 iconpack/ 三个库写进 assets + 生成 src/bundled.ts
+cd ../AEMobileApp/android && JAVA_HOME=<jdk17> ./gradlew assembleRelease
+python embed_pack.py --restore  # 出完包记得还原，别提交进仓库
+```
+
+### 3.6 改在线更新逻辑
 
 `AEMobileApp/src/iconpack.ts`：`PACK_KINDS` / `packInfo()` / `pendingKinds()` / `installOne()`。
 清单格式见 `程序结构.md` 的「三个库都能在线更新」一节。
@@ -148,6 +166,31 @@ cd D:/Develop/Game/AEMobildAll/AEMobileApp/android && JAVA_HOME=D:/Library/Devel
 ---
 
 ## 6. 约定
+
+### 6.1 提交规范（踩过坑）
+
+**提交信息里只写「改了什么、为什么」，不要出现本地工作方式、助手约定、工具名。**
+
+- ❌ `chore: gitignore 忽略 .workbuddy 本地工作区` —— 把本地用的工具名写进了公开历史
+- ❌ 正文写「不要 push，交给本人」「不要删 .workbuddy-ai/」这类给助手看的规则
+- ✅ `chore: gitignore 忽略本地工作区`
+- ✅ `gitignore：统一忽略规则写法`
+
+`.gitignore` 的 AI 目录段落也按「各家工具都有」写（`.opencode/` 打头，跟着 `.workbuddy/`、`.codebuddy/`、
+`.claude/`、`.cursor/` …），别只留一个，否则等于公布用的是哪个。
+
+历史里已经清理过一次（2026-10-28）：App 仓库从 163MB 降到 9.4MB，`assets/*.db` 全历史抹除。
+**以后别再把图标库提交进仓库**（见 6.2）。
+
+### 6.2 图标库不进公开仓库
+
+图标是各模组的艺术作品，只通过**自建更新源**分发：
+
+- 仓库里只放脚本和文档（`AEMobileApp/.gitignore` 已忽略 `/assets/*.db`）。
+- 本地留一份给测试用：`D:/Develop/Game/AEMobildAll/iconpack/{items,fluids,essentia}.db`。
+- App 不内置任何库：首次启动进「首次使用」页，导入配置包或填图标源地址。
+
+### 6.3 其它
 
 - 改帧格式 / 协议字段前，先读 `传输协议与安全.md`，并且 **App 和 mod 要一起改**。
 - 三个库是**分开分发**的，别再把它们合并回一个大 `itempanel.db`。
