@@ -47,8 +47,8 @@ def rebuild(dump_dir, db_path, rows, dry):
                 'has_nbt NUM, dname NUM, icon NUM)')
     # 没索引时每次查 (name, meta) 都要全表扫 180MB，18263 条物品能拖到几十秒
     new.execute('CREATE INDEX idx_item ON item_panel(item_name, item_meta)')
-    new.execute('CREATE TABLE fluid_container (id integer primary key, fluid_name string, item string, '
-                'meta string, container_display_name string, amount integer)')
+    # 覆盖索引：App 只取 dname 时不用回表读整行（图标 BLOB 让每行约 3KB）
+    new.execute('CREATE INDEX idx_item_dname ON item_panel(item_name, item_meta, dname)')
 
     seen = set()
     added = updated = 0
@@ -79,9 +79,16 @@ def rebuild(dump_dir, db_path, rows, dry):
                         [(n, 0, m, 0, d, i) for n, m, i, d in extra])
         added = len(extra)
 
-    new.executemany('insert into fluid_container (id,fluid_name,item,meta,container_display_name,amount) '
-                    'values (?,?,?,?,?,?)',
-                    old.execute('select id,fluid_name,item,meta,container_display_name,amount from fluid_container'))
+    # 老的单库（itempanel.db）里有 fluid_container；三库拆分后 items.db 没有这张表，别硬拷
+    has_fc = old.execute(
+        "select count(*) from sqlite_master where type='table' and name='fluid_container'").fetchone()[0]
+    if has_fc:
+        new.execute('CREATE TABLE fluid_container (id integer primary key, fluid_name string, item string, '
+                    'meta string, container_display_name string, amount integer)')
+        new.executemany('insert into fluid_container (id,fluid_name,item,meta,container_display_name,amount) '
+                        'values (?,?,?,?,?,?)',
+                        old.execute('select id,fluid_name,item,meta,container_display_name,amount '
+                                    'from fluid_container'))
     new.commit()
     total = new.execute('select count(*) from item_panel').fetchone()[0]
     ok = new.execute('pragma integrity_check').fetchone()[0]
@@ -104,7 +111,7 @@ def main():
         print(__doc__)
         return
     dump_dir = sys.argv[1]
-    db_path = 'AEMobileApp/assets/itempanel.db'
+    db_path = 'AEMobileApp/assets/items.db'
     dry = '--dry' in sys.argv
     if '--db' in sys.argv:
         db_path = sys.argv[sys.argv.index('--db') + 1]

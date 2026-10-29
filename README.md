@@ -1,15 +1,30 @@
 # AEMobile 图标库
 
+| 仓库                                                                      | 是什么                          |
+| ----------------------------------------------------------------------- | ---------------------------- |
+| [AEMobile](https://github.com/Huaxidesu/AEMobile)                       | 服务端 mod：AE 监控器、TCP 服务、图标导出命令 |
+| [AEMobileApp](https://github.com/Huaxidesu/AEMobileApp)                 | 手机端 App：AE 监控、物品 / 流体 / 源质终端 |
+| **[AEMobileIcoOutput](https://github.com/Huaxidesu/AEMobileIcoOutput)** | 图标库维护包（本仓库）：导出、建库、出包脚本       |
+
 AEMobile 是 GTNH 的手机端物品终端。这个仓库放它的**图标数据工具**：物品图标、流体图标、神秘时代源质图标。
 
-> **App 不内置图标库**，也没有预设服务器。图标是各模组的艺术作品，不随安装包分发 ——
+> **用 AI 工具（Claude Code / Cursor / Codex 这类 agent harness）维护这个包？**  
+> 把仓库里的 [AGENTS.md](AGENTS.md) 交给它，剩下的让它带你走：它会告诉你游戏里该敲哪条导出命令、  
+> 跑完自动验收产物、建库打包，最后帮你把图标包装到手机上逐项核对。  
+> 你只要做 AI 做不了的那一步 —— 在游戏里敲命令（客户端渲染只能人来跑）。
+
+
+
+> **App 不内置图标库**，也没有预设服务器。图标是各模组的艺术作品，不随安装包分发 ——  
 > 由服主自己搭一份更新源，玩家导入配置包后从那儿下载。
 
-| 库 | 内容 | 大小 |
-|---|---|---|
-| 物品 | 6 万多个物品的图标和中文名 | ~186MB |
-| 流体 | 流体名字、流体和容器物品的对应关系 | ~216KB |
-| 源质 | 神秘时代要素的图标和名字 | ~180KB |
+
+
+| 库  | 内容                           | 大小     |
+| -- | ---------------------------- | ------ |
+| 物品 | 6 万多个物品的图标和中文名               | ~186MB |
+| 流体 | 流体图标（贴图 + 颜色）、中文名、和容器物品的对应关系 | ~2MB   |
+| 源质 | 神秘时代要素的图标和名字                 | ~240KB |
 
 三个库**分开更新**：哪个变了才下哪个，补一个源质图标不会重下 186MB。
 
@@ -43,16 +58,25 @@ AEMobile 是 GTNH 的手机端物品终端。这个仓库放它的**图标数据
 在装了 AEMobile mod 的客户端里导出图标，然后一键重建：
 
 ```bash
-# 游戏里（进世界后）：/aemobile dumpicons
+# 游戏里（进世界后）：/aemobile dump all     ← 物品图标 + 流体颜色 + 源质颜色
 cd AEMobileIcoOutput
 python update_packs.py --note "GTNH 2.9.1 图标"
 ```
 
-细节见 [AGENTS.md](AGENTS.md) §0。
+第一次在别的机器上跑，先记一下本机路径（含自动找到的 GT 汉化文件）：
+
+```bash
+python update_packs.py --only essentia --no-pack --no-sha --save-config
+```
+
+流体中文名依赖 GTNH 自带的 `GregTech_zh_CN.lang`，脚本会自己去客户端实例根目录找，  
+找不到会停下并告诉你怎么用 `--lang` 指定。
+
+细节见 [AGENTS.md](AGENTS.md) §0.0（AI 执行手册）和 §0（快速流程）。
 
 ### 2.2 发布更新源
 
-把 `buildiconpack.py` 生成的目录（`version.json` + `icons/*.db` + `.db.gz`）放到任意能直链访问的地方
+把 `buildiconpack.py` 生成的目录（`version.json` + `icons/*.db` + `.db.gz`）放到任意能直链访问的地方  
 （Gitea / Nginx / 对象存储都行），记下 `version.json` 的完整 URL。
 
 **别放 GitHub** —— 图标是模组作者的作品，别把 186MB 的库塞进公开仓库。
@@ -62,7 +86,7 @@ python update_packs.py --note "GTNH 2.9.1 图标"
 ```bash
 python make_bundle.py \
     --ip mc.example.com \
-    --name "我的服务器" \
+    --name "主服务器" \
     --icon-source https://cdn.example.com/ae/version.json \
     --from-server-list servers.json \
     --out dist
@@ -109,16 +133,16 @@ AEMobileIcoOutput/
 
 ## 四、常见问题
 
-**Q：物品页有图标空白？**
+**Q：物品页有图标空白？**  
 A：那个「物品名 + meta」没被导出过。维护者重新跑一次全量导出即可。
 
-**Q：流体和源质在「可合成」里看不到？**
+**Q：流体和源质在「可合成」里看不到？**  
 A：它们本来就不可合成。第一行点开「流体」「源质」，第二行切到「全部」。
 
-**Q：搜索搜不到流体/源质？**
+**Q：搜索搜不到流体/源质？**  
 A：搜索按显示名匹配，直接搜中文（「氨」「火」）。也支持注册名（`fluid_drop`、`essentia`）。
 
-**Q：下载失败？**
+**Q：下载失败？**  
 A：确认图标源地址能直接打开 `version.json`；也可以先用「导入配置包」把地址换掉。
 
 ---

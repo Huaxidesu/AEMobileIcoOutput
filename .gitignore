@@ -47,3 +47,6 @@ desktop.ini
 # 日志与临时输出
 *.log
 output/
+
+# 本机路径配置（每台机器各写各的：python update_packs.py --save-config 生成）
+pack_config.json

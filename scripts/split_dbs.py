@@ -50,6 +50,8 @@ def make_db(path, ddl, rows, table, cols):
     conn.commit()
     if table == 'item_panel':
         conn.execute('create index idx_item on item_panel(item_name, item_meta)')
+        # 覆盖索引：App 只取 dname 时不用回表读整行
+        conn.execute('create index idx_item_dname on item_panel(item_name, item_meta, dname)')
         conn.commit()
     n = conn.execute(f'select count(*) from {table}').fetchone()[0]
     ok = conn.execute('pragma integrity_check').fetchone()[0]
