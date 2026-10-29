@@ -208,6 +208,34 @@ D:/Develop/Game/AEMobildAll/
 图标数据（`items.db` / `fluids.db` / `essentia.db`）在 `AEMobileApp/assets/`，
 更新包生成到 `D:/Develop/Game/update/dsmgtnhupdate/ae`（Gitea 的 `dsmgtnhupdate` 仓库）。
 
+### 本机路径（2026-10-29 核对，换机器只改 `pack_config.json`）
+
+| 是什么 | 路径 |
+|---|---|
+| 工作根目录 | `D:\Develop\Game\AEMobildAll` |
+| 图标库本地副本（**不进 git**） | `D:\Develop\Game\AEMobildAll\iconpack`（`embed_pack.py` 默认从这儿取） |
+| 更新包输出 | `D:\Develop\Game\update\dsmgtnhupdate\ae` |
+| **游戏客户端**（导出图标的那个实例） | `D:\Game\Minecraft\MMCproject\instances\GTNHRC2\.minecraft` |
+| **服务端**（本地测试） | `D:\Game\Minecraft\Server\GTNH290RC2` |
+| **模拟器** | MuMu，`adb connect 127.0.0.1:5555` |
+
+导出/建库会用到的具体位置：
+
+```
+<客户端>\.minecraft\dumps\aemobile\items\             /aemobile dump items 的 PNG + manifest.jsonl
+<客户端>\.minecraft\dumps\aemobile\atlas.raw          blocks 图集快照（256MB，8192×8192）
+<客户端>\.minecraft\dumps\aemobile\fluid-atlas.tsv    流体在图集里的坐标
+<客户端>\.minecraft\dumps\aemobile\fluid-colors.tsv   流体颜色表
+<客户端>\.minecraft\dumps\aemobile\aspect-colors.tsv  源质颜色表
+<客户端>\.minecraft\dumps\aemobile\aspect-images.tsv  源质贴图真实路径（Aspect.getImage）
+<客户端>\.minecraft\mods\                            扫 jar 抽流体/源质贴图
+<客户端>\.minecraft\GregTech_zh_CN.lang              流体中文名
+<客户端>\.minecraft\config\AEMobile.cfg              [debug] enabled 打开后可以写 cmd-client.txt 触发导出
+```
+
+建库要用**装了 Pillow 的 Python**（`pip install pillow`）。托管运行时默认没有 PIL，
+跑 `build_fluid_icons.py` 会报 `ModuleNotFoundError: PIL`，换个装了 Pillow 的解释器即可。
+
 ---
 
 ## 3. 常见任务怎么做
