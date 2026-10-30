@@ -53,21 +53,21 @@ AEMobile 是 GTNH 的手机端物品终端。这个仓库放它的**图标数据
 ### 1.2 命令
 
 ```
-/aemobile dump all [尺寸]          三样一起：物品图标 + 流体颜色 + 源质颜色
-/aemobile dump items [尺寸]        只导物品图标（默认 128px）
-/aemobile dump fluids              只导流体颜色表 + 图集快照
-/aemobile dump aspects             只导源质颜色表 + 贴图路径表
-/aemobile dumpicons [list] [尺寸]  老入口 = dump items（list：只导清单里的物品）
-/aemobile dumpcolors               老入口 = dump fluids aspects
+/aemobileicons dump all [尺寸]          三样一起：物品图标 + 流体颜色 + 源质颜色
+/aemobileicons dump items [尺寸]        只导物品图标（默认 128px）
+/aemobileicons dump fluids              只导流体颜色表 + 图集快照
+/aemobileicons dump aspects             只导源质颜色表 + 贴图路径表
+/aemobileicons dumpicons [list] [尺寸]  老入口 = dump items（list：只导清单里的物品）
+/aemobileicons dumpcolors               老入口 = dump fluids aspects
 ```
 
 | 需求 | 用哪条 | 说明 |
 | --- | --- | --- |
-| 换 GTNH 版本后全套更新 | `/aemobile dump all` | 物品那一步会花屏，可按 Esc 中止 |
-| 只补物品图标 | `/aemobile dump items 64` | 64px 体积减半，手机上会略糊 |
-| 只补流体 | `/aemobile dump fluids` | 秒级，顺便写 `atlas.raw` |
-| 只补源质 | `/aemobile dump aspects` | 秒级，顺便写 `aspect-images.tsv` |
-| 补清单里的少数物品 | `/aemobile dumpicons list` | 清单在 `config/aemobile-dump-items.txt` |
+| 换 GTNH 版本后全套更新 | `/aemobileicons dump all` | 物品那一步会花屏，可按 Esc 中止 |
+| 只补物品图标 | `/aemobileicons dump items 64` | 64px 体积减半，手机上会略糊 |
+| 只补流体 | `/aemobileicons dump fluids` | 秒级，顺便写 `atlas.raw` |
+| 只补源质 | `/aemobileicons dump aspects` | 秒级，顺便写 `aspect-images.tsv` |
+| 补清单里的少数物品 | `/aemobileicons dumpicons list` | 清单在 `config/aemobile-dump-items.txt` |
 
 只有物品会走 GL 渲染，所以会花屏；流体和源质是纯文件 IO，不会卡游戏。
 
@@ -394,10 +394,10 @@ A：依次检查：地址是不是 `raw` 直链（不是网页 `/src/` 页面）
 
 **Q：物品页有图标空白？**
 A：那个「物品名 + meta」没被导出过。维护者重新跑一次全量导出即可
-（`/aemobile dump all` 或补清单）。
+（`/aemobileicons dump all` 或补清单）。
 
 **Q：流体是灰白的？**
-A：没跑 `/aemobile dump fluids`，缺 `atlas.raw`，只能退回「jar 灰度图 × 颜色」。
+A：没跑 `/aemobileicons dump fluids`，缺 `atlas.raw`，只能退回「jar 灰度图 × 颜色」。
 重跑一次导出，确认 `atlas.raw` 大小是 `8192 × 8192 × 4`。
 
 **Q：源质显示问号？**

@@ -4,7 +4,7 @@
 用法：
     python tools/build_item_icons.py <dumps 目录> [--db <itempanel.db>] [--dry]
 
-<dumps 目录> 就是 `/aemobile dumpicons` 产出的目录（里面有 manifest.jsonl 和 <modid>/*.png）。
+<dumps 目录> 就是 `/aemobileicons dumpicons` 产出的目录（里面有 manifest.jsonl 和 <modid>/*.png）。
 - 已有 (item_name, item_meta) 的：只覆盖 icon（和空着的 dname），不动别的行
 - 没有的：新增一行
 - `--dry` 只统计不写库

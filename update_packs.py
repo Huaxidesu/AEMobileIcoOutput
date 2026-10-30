@@ -8,9 +8,9 @@
     python update_packs.py --note "补 3 个新方块图标"
 
 做的事：
-  1. items     : 用游戏里 /aemobile dumpicons 导出的图标重建 items.db（带索引）
+  1. items     : 用游戏里 /aemobileicons dumpicons 导出的图标重建 items.db（带索引）
   2. essentia  : 扫 mods 目录里所有 jar 的源质贴图 + 汉化，重建 essentia.db
-                 （有 /aemobile dump aspects 的颜色表就把颜色烘进图标）
+                 （有 /aemobileicons dump aspects 的颜色表就把颜色烘进图标）
   3. fluids    : 用 GT 汉化刷新 fluids.db 的 fluid_name 表（fluid_container 不动），
                  再用图集快照 / mods 里的流体贴图 + 颜色重建 fluid_icon 表
   4. 同步 sha256 到 AEMobileApp/src/iconpack.ts 的 BUILTIN_SHAS
@@ -40,9 +40,9 @@ CONFIG = {
     'project': r'D:/Develop/Game/AEMobildAll',
     # GTNH 客户端实例（mods 目录用来抽源质图标）
     'mods': r'D:/Game/Minecraft/MMCproject/instances/GTNHRC2/.minecraft/mods',
-    # 游戏里 /aemobile dumpicons 的产物目录
+    # 游戏里 /aemobileicons dumpicons 的产物目录
     'dumps': r'D:/Game/Minecraft/MMCproject/instances/GTNHRC2/.minecraft/dumps/aemobile/items',
-    # 游戏里 /aemobile dump fluids|aspects 的产物目录（颜色表 + 图集快照）
+    # 游戏里 /aemobileicons dump fluids|aspects 的产物目录（颜色表 + 图集快照）
     'dumps_dir': r'D:/Game/Minecraft/MMCproject/instances/GTNHRC2/.minecraft/dumps/aemobile',
     'fluid_colors': r'D:/Game/Minecraft/MMCproject/instances/GTNHRC2/.minecraft/dumps/aemobile/fluid-colors.tsv',
     'aspect_colors': r'D:/Game/Minecraft/MMCproject/instances/GTNHRC2/.minecraft/dumps/aemobile/aspect-colors.tsv',
@@ -186,7 +186,7 @@ def rebuild(kind, args):
     if kind == 'items':
         src = args.dumps or CFG['dumps']
         if not os.path.isdir(src):
-            raise SystemExit('找不到图标导出目录：%s\n先在游戏里跑 /aemobile dumpicons' % src)
+            raise SystemExit('找不到图标导出目录：%s\n先在游戏里跑 /aemobileicons dumpicons' % src)
         # 必须显式给 --db：脚本的默认值是相对的，而这里 cwd 是 AEMobileIcoOutput
         run([sys.executable, os.path.join(scripts, 'build_item_icons.py'), src,
              '--db', target, '--rebuild'])
@@ -201,7 +201,7 @@ def rebuild(kind, args):
                    '--colors', colors, target]
         else:
             print('提示：没有 %s，源质图标存灰度蒙版，App 用服务端颜色现染' % colors)
-            print('      想烘死颜色就先在游戏里跑 /aemobile dump aspects')
+            print('      想烘死颜色就先在游戏里跑 /aemobileicons dump aspects')
         images = args.aspect_images or CFG.get('aspect_images')
         if images and os.path.isfile(images):
             cmd = cmd[:-1] + ['--images', images, cmd[-1]]
@@ -224,7 +224,7 @@ def rebuild(kind, args):
             cmd += ['--colors', colors]
         else:
             print('提示：没有 %s，流体图标存灰度图，App 用服务端颜色现染' % colors)
-            print('      想烘死颜色就先在游戏里跑 /aemobile dump fluids')
+            print('      想烘死颜色就先在游戏里跑 /aemobileicons dump fluids')
         run(cmd)
     else:
         raise SystemExit('未知的库：%s' % kind)
@@ -288,9 +288,9 @@ def main():
     ap.add_argument('--lang', default=None,
                     help='GregTech 汉化文件（不给就自动去客户端实例根目录找）')
     ap.add_argument('--atlas-dir', default=None, help='dump fluids 导出的图集目录（atlas.raw）')
-    ap.add_argument('--fluid-colors', default=None, help='/aemobile dump fluids 导出的流体颜色表')
-    ap.add_argument('--aspect-colors', default=None, help='/aemobile dump aspects 导出的源质颜色表')
-    ap.add_argument('--aspect-images', default=None, help='/aemobile dump aspects 导出的源质贴图路径表')
+    ap.add_argument('--fluid-colors', default=None, help='/aemobileicons dump fluids 导出的流体颜色表')
+    ap.add_argument('--aspect-colors', default=None, help='/aemobileicons dump aspects 导出的源质颜色表')
+    ap.add_argument('--aspect-images', default=None, help='/aemobileicons dump aspects 导出的源质贴图路径表')
     ap.add_argument('--save-config', action='store_true',
                     help='把这次生效的路径写进 pack_config.json，下次不用再传')
     args = ap.parse_args()

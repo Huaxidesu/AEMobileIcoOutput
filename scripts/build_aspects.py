@@ -7,13 +7,13 @@
       python tools/build_aspects.py <jar1> <jar2> ... [--colors ...] <输出 db>   （最后一个参数是输出）
 
 - 图标：`assets/<modid>/textures/aspects/<tag>.png`（TC4 自带 50 个，附属模组还有十来个）
-- 贴图路径（`--images`，游戏里 `/aemobile dump aspects` 导出）：附属模组注册的要素
+- 贴图路径（`--images`，游戏里 `/aemobileicons dump aspects` 导出）：附属模组注册的要素
   （custom1-5 / caelum / tabernus / terminus / evolutio）**文件名和 tag 对不上**，
   只靠文件名匹配会落到问号图标，必须按 `Aspect.getImage()` 给的真实路径去找
 - 中文名：各 jar 里 `assets/<modid>/lang/zh_CN.lang` 的 `tc.aspect.<tag>=火,火焰`（取逗号前第一个）
 - 同一个 tag 多个来源时，后扫到的覆盖前面的（附属模组的自定义贴图优先）
 
-颜色（`--colors`，游戏里 `/aemobile dumpaspects` 导出）：
+颜色（`--colors`，游戏里 `/aemobileicons dumpaspects` 导出）：
 - 源质贴图是**灰度蒙版**，游戏里靠 `Aspect.getColor()` 乘上去。给了颜色表就把颜色烘进 PNG
   （tint=0），App 直接显示；没给就原样入库（tint=1），App 用服务端 NBT 里的 Color 现染。
 """
