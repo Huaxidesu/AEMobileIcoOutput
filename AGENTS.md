@@ -187,7 +187,7 @@ JAVA_HOME=D:/Library/DevelopmentKit/Java/Zulu/zulu17 ./gradlew assembleRelease
 
 | 文件 | 为什么读 |
 |---|---|
-| `D:/Develop/Game/AEMobildAll/HANDOFF.md` | 全局交接：三个仓库、服务器地址、当前状态、待办 |
+| `D:/Develop/Game/AEMobildAll/AGENTS.md` | 全局交接：三个仓库、服务器地址、当前状态、待办 |
 | `AEMobileApp/doc/AI协作.md` | 客户端架构、版本号规则、UI 约定、一堆历史坑 |
 | `AEMobileApp/doc/程序结构.md` | 三个库的表结构、装配方式、在线更新流程 |
 | `AEMobile/doc/开发进度.md` | 服务端（mod）改了什么、为什么改 |

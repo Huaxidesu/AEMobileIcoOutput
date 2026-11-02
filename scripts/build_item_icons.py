@@ -24,6 +24,18 @@ def _sanitize(part):
     return re.sub(r'[^A-Za-z0-9._-]', '_', part)
 
 
+# `§` 颜色码（含 `§r` 重置）。图标库里的 dname 是**给手机看的纯文本**，颜色码只会在
+# 界面上原样显示成 `§l§d奥术裂隙`。TST 这类模组的物品名带 § 码，导出时原样落进 manifest。
+_CODES = re.compile(r'\u00a7[0-9a-fk-orA-FK-OR]')
+
+
+def _strip_codes(s):
+    """去掉 § 颜色码并压掉首尾空白；None/空串原样返回。"""
+    if not s:
+        return s
+    return _CODES.sub('', s).strip()
+
+
 def rebuild(dump_dir, db_path, rows, dry):
     """重建整库：老行原样拷，dump 里有的换图标/补名字，dump 里没有的新增。比原地 UPDATE 快一个数量级。"""
     icons = {}
@@ -35,7 +47,8 @@ def rebuild(dump_dir, db_path, rows, dry):
             parts[0] = _sanitize(parts[0])
             png = os.path.join(dump_dir, *parts)
         if os.path.isfile(png):
-            icons[(r['name'], int(r['meta']))] = (io.open(png, 'rb').read(), (r.get('dname') or '').strip())
+            icons[(r['name'], int(r['meta']))] = (io.open(png, 'rb').read(),
+                                                 _strip_codes((r.get('dname') or '').strip()))
 
     tmp_path = db_path + '.new'
     if os.path.exists(tmp_path):
@@ -57,6 +70,8 @@ def rebuild(dump_dir, db_path, rows, dry):
     for name, item_id, meta, has_nbt, dname, icon in src:
         key = (name, meta)
         seen.add(key)
+        # 老库里的 dname 可能还带 § 码（TST 那类模组），重建时一并清掉
+        dname = _strip_codes(dname)
         hit = icons.get(key)
         if hit is not None:
             icon = hit[0]
@@ -160,7 +175,7 @@ def main():
             missing_png += 1
             continue
         blob = io.open(png, 'rb').read()
-        dname = (r.get('dname') or '').strip()
+        dname = _strip_codes((r.get('dname') or '').strip())
         key = (name, meta)
         if key in existing:
             if dry:
