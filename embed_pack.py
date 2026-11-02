@@ -4,7 +4,8 @@
 用法（在 AEMobileIcoOutput 目录下）：
     python embed_pack.py                       # 用 AEMobildAll/iconpack 里的三个库
     python embed_pack.py --src <库目录>
-    python embed_pack.py --restore             # 还原成「不内置」
+    python embed_pack.py --app <App 目录>      # 指定别的副本（深空矩阵构建副本）
+    python embed_pack.py --restore [--app ...]  # 还原成「不内置」
 
 做的事：
   1. 把 items.db / fluids.db / essentia.db 复制到 AEMobileApp/assets/
@@ -24,6 +25,16 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # AEMobildAl
 APP = os.path.join(ROOT, 'AEMobileApp')
 ASSETS = os.path.join(APP, 'assets')
 BUNDLED_TS = os.path.join(APP, 'src', 'bundled.ts')
+
+
+def use_app(path):
+    """把目标切到另一个 App 目录（深空矩阵构建副本就是这么用的）。"""
+    global APP, ASSETS, BUNDLED_TS
+    APP = os.path.abspath(path)
+    if not os.path.isfile(os.path.join(APP, 'App.tsx')):
+        raise SystemExit('不像 App 目录（缺 App.tsx）：%s' % APP)
+    ASSETS = os.path.join(APP, 'assets')
+    BUNDLED_TS = os.path.join(APP, 'src', 'bundled.ts')
 
 KINDS = ['items', 'fluids', 'essentia']
 
@@ -84,8 +95,11 @@ def embed(src):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--src', default=os.path.join(ROOT, 'iconpack'), help='三个库所在目录')
+    ap.add_argument('--app', default=None, help='App 目录，默认 AEMobildAll/AEMobileApp')
     ap.add_argument('--restore', action='store_true', help='还原成不内置')
     args = ap.parse_args()
+    if args.app:
+        use_app(args.app)
     if args.restore:
         restore()
     else:
