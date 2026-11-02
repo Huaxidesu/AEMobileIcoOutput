@@ -214,7 +214,7 @@ def main():
             pass
     print('库里 %d 条流体' % len(names))
 
-    # jar 要缓存句柄：每条流体都重新开一次 100MB 的 gregtech.jar，1286 条能把磁盘读穿
+    # jar 要缓存句柄：每条流体都重新打开一次 100MB 的 gregtech.jar，1286 条时磁盘读取量巨大
     jars = {}
     raw_cache = {}
     baked_cache = {}

@@ -6,21 +6,21 @@
 | [AEMobileApp](https://github.com/Huaxidesu/AEMobileApp)                 | 手机端 App：AE 监控、物品 / 流体 / 源质终端 |
 | **[AEMobileIcoOutput](https://github.com/Huaxidesu/AEMobileIcoOutput)** | 图标库维护包（本仓库）：导出、建库、出包脚本       |
 
-AEMobile 是 GTNH 的手机端物品终端。这个仓库放它的**图标数据工具**：从游戏里导出物品 / 流体 / 源质图标，建成本地库，再分发给玩家。
+AEMobile 是 GTNH 的手机端物品终端。这个仓库存放它的**图标数据工具**：从游戏里导出物品 / 流体 / 源质图标，建成本地库，再分发给玩家。
 
 > **App 不内置图标库，也没有预设服务器。** 图标是各模组的艺术作品，不随安装包分发。
 > 分发方式有三种，见 §0；**不搭更新服务器也能用**。
 
 ## AI 工具入口
 
-> **用 Claude Code / Cursor / Codex 这类 agent 维护？**
+> **用 Claude Code / Cursor / Codex 这类 agent 维护时**，
 > 把仓库里的 [AGENTS.md](AGENTS.md) 交给它，然后说：
 > **「读 AGENTS.md，按 §0.0 帮我更新图标库」**。
 >
-> 它会带你走完：摸清现状 → 告诉你游戏里该敲哪条命令 → 验收导出产物 → 建库打包 →
+> 它会引导完成：确认现状 → 告知游戏内需执行的命令 → 验收导出产物 → 建库打包 →
 > 最后把图标包装到手机上逐项核对。
 >
-> 你只需要做 AI 做不了的那一步：**进游戏敲命令**（客户端渲染只能人来跑）。
+> 仅剩 AI 无法完成的一步：**进游戏执行命令**（客户端渲染只能由人工操作）。
 
 ---
 
@@ -30,11 +30,11 @@ AEMobile 是 GTNH 的手机端物品终端。这个仓库放它的**图标数据
 | --- | --- | --- | --- |
 | **A. 在线更新** | 配置包或手填地址 → App 自己下载图标 | 需要 | 长期开服、玩家多 |
 | **B. 群里发** | 带图标库的 APK + 配置包 | 不需要 | 小服、临时分发 |
-| **C. 只发 APK** | 带图标库的 APK，玩家自己填服务器地址 | 不需要 | 最省事 |
+| **C. 只发 APK** | 带图标库的 APK，玩家自己填服务器地址 | 不需要 | 最简单 |
 
-两条容易踩的规则：
+两条注意事项：
 
-- **配置包（`.zip`）只有几 KB，不含图标库。** 只发配置包、不搭更新源，玩家会卡在
+- **配置包（`.zip`）只有几 KB，不含图标库。** 只发配置包、不搭更新源，玩家会停留在
   「首次使用」页下载图标那一步。
 - **App 只有在「APK 内置了图标库」或「下载过图标库」之后才会进主界面。**
   所以 B / C 方案必须用 §4 的带库 APK。
@@ -46,7 +46,7 @@ AEMobile 是 GTNH 的手机端物品终端。这个仓库放它的**图标数据
 ### 1.1 前提
 
 - 客户端装了 AEMobile mod（服务端和客户端是同一个 jar）。
-- **进入世界**（不是主菜单），等 NEI 物品面板加载完，再敲命令。
+- **进入世界**（不是主菜单），等 NEI 物品面板加载完，再执行命令。
 - 新版本换过 GTNH 整合包时，先确认 `mods/` 里的 jar 是新的：jar 在游戏启动时才加载，
   旧 jar 不会认识新命令。
 
@@ -57,19 +57,19 @@ AEMobile 是 GTNH 的手机端物品终端。这个仓库放它的**图标数据
 /aemobileicons dump items [尺寸]        只导物品图标（默认 128px）
 /aemobileicons dump fluids              只导流体颜色表 + 图集快照
 /aemobileicons dump aspects             只导源质颜色表 + 贴图路径表
-/aemobileicons dumpicons [list] [尺寸]  老入口 = dump items（list：只导清单里的物品）
-/aemobileicons dumpcolors               老入口 = dump fluids aspects
+/aemobileicons dumpicons [list] [尺寸]  旧入口 = dump items（list：只导清单里的物品）
+/aemobileicons dumpcolors               旧入口 = dump fluids aspects
 ```
 
 | 需求 | 用哪条 | 说明 |
 | --- | --- | --- |
 | 换 GTNH 版本后全套更新 | `/aemobileicons dump all` | 物品那一步会花屏，可按 Esc 中止 |
 | 只补物品图标 | `/aemobileicons dump items 64` | 64px 体积减半，手机上会略糊 |
-| 只补流体 | `/aemobileicons dump fluids` | 秒级，顺便写 `atlas.raw` |
-| 只补源质 | `/aemobileicons dump aspects` | 秒级，顺便写 `aspect-images.tsv` |
+| 只补流体 | `/aemobileicons dump fluids` | 秒级，一并写入 `atlas.raw` |
+| 只补源质 | `/aemobileicons dump aspects` | 秒级，一并写入 `aspect-images.tsv` |
 | 补清单里的少数物品 | `/aemobileicons dumpicons list` | 清单在 `config/aemobile-dump-items.txt` |
 
-只有物品会走 GL 渲染，所以会花屏；流体和源质是纯文件 IO，不会卡游戏。
+只有物品会经过 GL 渲染，所以会花屏；流体和源质是纯文件 IO，不会阻塞游戏。
 
 ### 1.3 产物
 
@@ -84,11 +84,11 @@ AEMobile 是 GTNH 的手机端物品终端。这个仓库放它的**图标数据
 └── aspect-images.tsv                   源质贴图的真实路径
 ```
 
-### 1.4 先验收，别急着建库
+### 1.4 先验收，不要急于建库
 
 | 检查 | 期望 |
 | --- | --- |
-| `items/manifest.jsonl` 行数 | 几万行；明显偏少 = 导到一半被 Esc 了 |
+| `items/manifest.jsonl` 行数 | 几万行；明显偏少 = 导出中途被 Esc 中止 |
 | `fluid-colors.tsv` 行数 | 约 1550 |
 | `fluid-atlas.tsv` 第一行 | `# atlas 8192 8192` |
 | `atlas.raw` 大小 | `8192 × 8192 × 4 = 268435456` 字节 |
@@ -108,7 +108,7 @@ AEMobile 是 GTNH 的手机端物品终端。这个仓库放它的**图标数据
 - **GTNH 汉化文件 `GregTech_zh_CN.lang` 是必需的**，流体的中文名靠它。GTNH 客户端实例根目录就自带一份，
   不用单独下载；脚本会自动找，找不到会停下并打印找过的位置。
 
-### 2.2 第一次在这台机器上跑
+### 2.2 第一次在这台机器上运行
 
 先把本机路径记下来（会写到 `pack_config.json`，该文件不入库）：
 
@@ -118,7 +118,7 @@ python update_packs.py --only essentia --no-pack --no-sha --save-config
 ```
 
 这条命令会先把当前路径写入 `pack_config.json`，再试建一次源质库。
-如果路径不对，建库阶段会报错，但配置已经写好了 —— 改完 `pack_config.json` 再跑即可。
+如果路径不对，建库阶段会报错，但配置已经写好了 —— 改完 `pack_config.json` 再运行即可。
 
 如果实例路径不是默认的，也可以在这一步直接用参数指定，或之后手动改 `pack_config.json`：
 
@@ -196,7 +196,7 @@ App 目前下载**未压缩的 `.db`**，`.gz` 是备用产物。
    cp -r <update_packs.py 的输出目录>/* ae/
    ```
 
-   也可以让 `update_packs.py --out` 直接输出到 `<更新仓库>/ae`，省掉复制。
+   也可以让 `update_packs.py --out` 直接输出到 `<更新仓库>/ae`，免去复制。
 
 3. 提交并推送。物品库是 186MB，第一次 push 前先放开缓冲区：
 
@@ -260,7 +260,7 @@ cd AEMobileIcoOutput
 python embed_pack.py
 ```
 
-默认从 `AEMobildAll/iconpack/` 取三个库（`update_packs.py` 每次跑完都会同步到这里）；
+默认从 `AEMobildAll/iconpack/` 取三个库（`update_packs.py` 每次运行完都会同步到这里）；
 库在别处时用 `--src <目录>`。
 
 它会做两件事：
@@ -275,7 +275,7 @@ cd ../AEMobileApp/android
 ./gradlew assembleRelease
 ```
 
-- `JAVA_HOME` 用系统默认的 JDK 17 即可，不需要在命令里写死路径。
+- `JAVA_HOME` 用系统默认的 JDK 17 即可，不需要在命令里硬编码路径。
   Windows PowerShell 可以先确认：`echo $env:JAVA_HOME`。
 - 产物：`app/build/outputs/apk/release/app-release.apk`。
 
@@ -311,7 +311,7 @@ python embed_pack.py --restore
 
 ## 5. 分发 A 的配置包：手动导入
 
-配置包是用来**省掉玩家手填服务器地址**的，几 KB，不含图标库。
+配置包是用来**免去玩家手填服务器地址**的，几 KB，不含图标库。
 
 ```bash
 cd AEMobileIcoOutput
@@ -348,7 +348,7 @@ README.txt      给玩家的说明
 4. 以后要换服务器或更新图标：**设置 → 图标库 / 服务器列表**。
 
 **不想搭更新源时**，不要只发这个 zip：它没有图标，玩家导入后仍然下载不到图标。
-正确的组合是「§4 的带库 APK + 这个配置包」；或者干脆只发带库 APK，让玩家自己填地址和密码。
+正确的组合是「§4 的带库 APK + 这个配置包」；或者只发带库 APK，让玩家自己填地址和密码。
 
 如果玩家已经有图标库，只想换服务器，也可以只用 App 里的手动入口：
 设置 → 服务器与账号，直接填地址、端口、密码。
@@ -360,7 +360,7 @@ README.txt      给玩家的说明
 ```
 AEMobileIcoOutput/
 ├── README.md          本文件：导出、建库、分发
-├── AGENTS.md          维护者 / AI 工作指引（完整流程、踩坑、验收、提交规范）
+├── AGENTS.md          维护者 / AI 工作指引（完整流程、注意事项、验收、提交规范）
 ├── update_packs.py    一键重建三个库 + 同步 sha256 + 生成更新包
 ├── make_bundle.py     生成给玩家的配置包 zip
 ├── embed_pack.py      把库写进 APK（出内置包用）
@@ -371,7 +371,7 @@ AEMobileIcoOutput/
 相关的本地目录：
 
 ```
-AEMobildAll/iconpack/{items,fluids,essentia}.db     本地库副本，embed_pack.py 默认从这儿取
+AEMobildAll/iconpack/{items,fluids,essentia}.db     本地库副本，embed_pack.py 默认从此处取
 AEMobileApp/assets/*.db                             出 APK 时临时放库，不入库
 AEMobileApp/src/bundled.ts                          内置包的 sha256 标记，由 embed_pack.py 生成
 ```
@@ -380,25 +380,25 @@ AEMobileApp/src/bundled.ts                          内置包的 sha256 标记�
 
 ## 7. 常见问题
 
-**Q：不搭更新服务器行不行？**
-A：行。用 §4 出带图标库的 APK，玩家装上就有图标；服务器地址可以发配置包，也可以让玩家自己填。
-但只发配置包不行 —— 包里没有图标。
+**Q：不搭建更新服务器是否可行？**
+A：可行。用 §4 出带图标库的 APK，玩家装上就有图标；服务器地址可以发配置包，也可以让玩家自己填。
+但只发配置包不可行 —— 包里没有图标。
 
 **Q：玩家导入配置包后还是没图标？**
-A：配置包只含服务器 / 线路 / 图标源，不含图标文件。要么让他点「下载图标库」，
-要么给他带库 APK。确认图标源地址能直接打开 `version.json`。
+A：配置包只含服务器 / 线路 / 图标源，不含图标文件。要么让玩家点「下载图标库」，
+要么提供带库 APK。确认图标源地址能直接打开 `version.json`。
 
 **Q：App 提示下载失败，但浏览器能打开 `version.json`？**
 A：依次检查：地址是不是 `raw` 直链（不是网页 `/src/` 页面）；仓库是不是公开；
 返回的是不是 JSON（私有仓库会返回登录页 HTML）；手机能不能访问这个域名。
 
 **Q：物品页有图标空白？**
-A：那个「物品名 + meta」没被导出过。维护者重新跑一次全量导出即可
+A：那个「物品名 + meta」没被导出过。维护者重新执行一次全量导出即可
 （`/aemobileicons dump all` 或补清单）。
 
 **Q：流体是灰白的？**
-A：没跑 `/aemobileicons dump fluids`，缺 `atlas.raw`，只能退回「jar 灰度图 × 颜色」。
-重跑一次导出，确认 `atlas.raw` 大小是 `8192 × 8192 × 4`。
+A：未执行 `/aemobileicons dump fluids`，缺 `atlas.raw`，只能退回「jar 灰度图 × 颜色」。
+重新执行一次导出，确认 `atlas.raw` 大小是 `8192 × 8192 × 4`。
 
 **Q：源质显示问号？**
 A：缺 `aspect-images.tsv`，或 mod 太旧没导这张表；附属模组的要素文件名和 tag 对不上，
@@ -411,7 +411,7 @@ A：它们本来就不可合成。第一行点开「流体」「源质」，第�
 A：搜索按显示名匹配，直接搜中文（「氨」「火」）。也支持注册名（`fluid_drop`、`essentia`）。
 
 **Q：改了库，App 没提示更新？**
-A：App 只比 `version.json` 里的 sha256。确认重新跑了 `update_packs.py`（不要加 `--no-pack`），
+A：App 只比 `version.json` 里的 sha256。确认重新执行了 `update_packs.py`（不要加 `--no-pack`），
 并且把新的 `version.json` + `icons/` 推上去了。
 
 **Q：同样的数据，为什么重复打包也会让所有人更新一次？**

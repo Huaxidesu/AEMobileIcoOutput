@@ -21,8 +21,8 @@
   2. 同目录的 pack_config.json 覆盖它（换机器只改这个文件，不动代码）
   3. 命令行 --lang / --mods / --dumps ... 覆盖前两者
 
-GT 汉化文件（流体中文名的来源）是**必须**的：没它 fluids 那步会报错停下。
-它不需要手动下载 —— GTNH 客户端实例根目录就自带一份，脚本会自动去那儿找；
+GT 汉化文件（流体中文名的来源）是**必须**的：缺少它 fluids 步骤会报错停止。
+它不需要手动下载 —— GTNH 客户端实例根目录就自带一份，脚本会自动查找；
 也可以用 --lang 指定，或写进 pack_config.json。
 """
 import argparse
@@ -48,8 +48,8 @@ CONFIG = {
     'aspect_colors': r'D:/Game/Minecraft/MMCproject/instances/GTNHRC2/.minecraft/dumps/aemobile/aspect-colors.tsv',
     # 源质贴图的真实路径（Aspect.getImage），附属要素靠它才能取到图
     'aspect_images': r'D:/Game/Minecraft/MMCproject/instances/GTNHRC2/.minecraft/dumps/aemobile/aspect-images.tsv',
-    # GregTech 汉化文件（流体中文名）。留空 = 自动去客户端实例根目录找；
-    # 换了机器又不想自动找，就在 pack_config.json 里写死，或命令行 --lang
+    # GregTech 汉化文件（流体中文名）。留空 = 自动去客户端实例根目录查找；
+    # 换了机器又不想自动找，就在 pack_config.json 里硬编码，或命令行 --lang
     'lang': '',
     # 在线更新仓库里的 ae/ 目录
     'out': r'D:/Develop/Game/update/dsmgtnhupdate/ae',
@@ -61,7 +61,7 @@ DB = {
     'essentia': 'essentia.db',
 }
 
-# 本机路径放这儿，别写进代码（换机器/换实例只改这个文件）
+# 本机路径放在此文件，不要写进代码（换机器/换实例只改这个文件）
 CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pack_config.json')
 
 # GT 汉化文件在实例里的常见位置（GTNH 整合包自带）
@@ -74,7 +74,7 @@ LANG_NAMES = (
 
 
 def load_config():
-    """CONFIG 打底，pack_config.json 覆盖"""
+    """以 CONFIG 为默认值，pack_config.json 覆盖"""
     cfg = dict(CONFIG)
     if not os.path.isfile(CONFIG_FILE):
         return cfg
@@ -115,7 +115,7 @@ def find_lang(cfg, override=None):
             if os.path.isfile(p):
                 return p, '客户端实例自带'
 
-    # 以前手动下载过的话，Downloads 里通常有
+    # 手动下载过的历史文件通常位于 Downloads
     for p in sorted(glob.glob('C:/Downloads/**/GregTech_zh_CN.lang', recursive=True),
                     key=os.path.getmtime, reverse=True)[:3]:
         tried.append(p)
@@ -126,7 +126,7 @@ def find_lang(cfg, override=None):
 
 
 def require_lang(cfg, override=None):
-    """fluids 那步没它就没法给流体起中文名，直接停"""
+    """fluids 步骤缺少它时无法生成流体中文名，直接停止"""
     path, source = find_lang(cfg, override)
     if path:
         print('GT 汉化：%s  ← %s' % (path, source))
@@ -146,7 +146,7 @@ def save_config(cfg):
             ('project', 'mods', 'dumps', 'dumps_dir', 'fluid_colors', 'aspect_colors',
              'aspect_images', 'out')
             if cfg.get(k)}
-    # 汉化文件按「实际找到的那份」记下来，别存空值
+    # 汉化文件按「实际找到的那份」记下来，不要存空值
     lang = cfg.get('lang')
     if not lang:
         lang = find_lang(cfg)[0]
@@ -207,15 +207,15 @@ def rebuild(kind, args):
             cmd = cmd[:-1] + ['--images', images, cmd[-1]]
         run(cmd)
     elif kind == 'fluids':
-        # GT 汉化：流体中文名的唯一来源，没有就直接停（自动去实例目录找，见 require_lang）
+        # GT 汉化：流体中文名的唯一来源，没有则直接停止（自动去实例目录查找，见 require_lang）
         src = require_lang(CFG, args.lang)
         run([sys.executable, os.path.join(scripts, 'build_fluid_names.py'), src, target])
-        # 流体图标：贴图从 mods 抽、颜色从游戏导（没有颜色表就存灰度图，App 端现染）
+        # 流体图标：贴图取自 mods、颜色来自游戏导出（没有颜色表就存灰度图，App 端现染）
         mods = args.mods or CFG['mods']
         if not os.path.isdir(mods):
             raise SystemExit('找不到 mods 目录：%s' % mods)
         cmd = [sys.executable, os.path.join(scripts, 'build_fluid_icons.py'), mods, '--db', target]
-        # 图集快照（dump fluids 顺手导出的 atlas.raw）优先，它才是游戏里真正画出来的图
+        # 图集快照（dump fluids 一并导出的 atlas.raw）优先，它是游戏里实际绘制的图
         atlas_dir = args.atlas_dir or CFG['dumps_dir']
         if os.path.isfile(os.path.join(atlas_dir, 'atlas.raw')):
             cmd += ['--atlas-dir', atlas_dir]
@@ -244,7 +244,7 @@ def sync_shas(kinds):
 
     changed = []
     for kind, digest in shas.items():
-        # items 走常量 BUILTIN_ICON_SHA，另外两个直接写在表里
+        # items 写入常量 BUILTIN_ICON_SHA，另外两个直接写在表里
         if kind == 'items':
             src = re.sub(r"export const BUILTIN_ICON_SHA = '[0-9a-f]{64}';",
                          "export const BUILTIN_ICON_SHA = '%s';" % digest, src)
@@ -259,8 +259,8 @@ def sync_iconpack_dir():
     """把建好的三个库同步一份到 AEMobildAll/iconpack/。
 
     为什么需要：`embed_pack.py` 默认从 iconpack/ 复制到 AEMobileApp/assets/，
-    而本脚本是直接写 assets/ 的。不同步的话，跑完本脚本再跑 embed_pack
-    会把刚建好的库覆盖回旧的（2026-10-29 实际踩到：新库 189MB 被 185MB 的旧库盖掉，
+    而本脚本是直接写 assets/ 的。不同步的话，运行完本脚本再运行 embed_pack
+    会把刚建好的库覆盖回旧的（2026-10-29 实际发生：新库 189MB 被 185MB 的旧库覆盖，
     APK 里 bundled.ts 的 sha 还是旧的，App 启动时判定「内置包没变」直接跳过落地）。
     """
     assets = os.path.join(CFG['project'], 'AEMobileApp', 'assets')
@@ -317,7 +317,7 @@ def main():
     if not args.no_sha:
         sync_shas(kinds)
 
-    # 让 iconpack/ 跟着更新：embed_pack.py 是从那儿复制到 assets/ 的
+    # 让 iconpack/ 跟着更新：embed_pack.py 从该目录复制到 assets/
     sync_iconpack_dir()
 
     if not args.no_pack:

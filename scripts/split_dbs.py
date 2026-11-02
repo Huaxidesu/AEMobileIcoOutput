@@ -22,7 +22,7 @@ APP = os.path.join(ROOT, 'AEMobileApp')
 
 
 def read_ts_aspects(path):
-    """从 src/aspects.ts 里抠出 {tag: (中文名, base64 png)}"""
+    """从 src/aspects.ts 里解析出 {tag: (中文名, base64 png)}"""
     src = io.open(path, encoding='utf-8').read()
     out = {}
     for m in re.finditer(r'^\s*"([^"]+)":\s*\{\s*n:\s*("(?:[^"\\]|\\.)*"),\s*i:\s*\'([^\']*)\'\s*\},', src, re.M):

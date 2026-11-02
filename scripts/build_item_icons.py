@@ -5,7 +5,7 @@
     python tools/build_item_icons.py <dumps 目录> [--db <itempanel.db>] [--dry]
 
 <dumps 目录> 就是 `/aemobileicons dumpicons` 产出的目录（里面有 manifest.jsonl 和 <modid>/*.png）。
-- 已有 (item_name, item_meta) 的：只覆盖 icon（和空着的 dname），不动别的行
+- 已有 (item_name, item_meta) 的：只覆盖 icon（和空着的 dname），不修改其它行
 - 没有的：新增一行
 - `--dry` 只统计不写库
 
@@ -37,7 +37,7 @@ def _strip_codes(s):
 
 
 def rebuild(dump_dir, db_path, rows, dry):
-    """重建整库：老行原样拷，dump 里有的换图标/补名字，dump 里没有的新增。比原地 UPDATE 快一个数量级。"""
+    """重建整库：旧行原样复制，dump 里有的换图标/补名字，dump 里没有的新增。比原地 UPDATE 快一个数量级。"""
     icons = {}
     for r in rows:
         rel = r['file'].replace('/', os.sep)
@@ -58,7 +58,7 @@ def rebuild(dump_dir, db_path, rows, dry):
     new.execute('PRAGMA synchronous=OFF')
     new.execute('CREATE TABLE item_panel (id INT, item_name NUM, item_id NUM, item_meta NUM, '
                 'has_nbt NUM, dname NUM, icon NUM)')
-    # 没索引时每次查 (name, meta) 都要全表扫 180MB，18263 条物品能拖到几十秒
+    # 没索引时每次查 (name, meta) 都要全表扫描 180MB，18263 条物品会耗时几十秒
     new.execute('CREATE INDEX idx_item ON item_panel(item_name, item_meta)')
     # 覆盖索引：App 只取 dname 时不用回表读整行（图标 BLOB 让每行约 3KB）
     new.execute('CREATE INDEX idx_item_dname ON item_panel(item_name, item_meta, dname)')
@@ -70,7 +70,7 @@ def rebuild(dump_dir, db_path, rows, dry):
     for name, item_id, meta, has_nbt, dname, icon in src:
         key = (name, meta)
         seen.add(key)
-        # 老库里的 dname 可能还带 § 码（TST 那类模组），重建时一并清掉
+        # 旧库里的 dname 可能仍带 § 码（TST 那类模组），重建时一并清除
         dname = _strip_codes(dname)
         hit = icons.get(key)
         if hit is not None:
@@ -94,7 +94,7 @@ def rebuild(dump_dir, db_path, rows, dry):
                         [(n, 0, m, 0, d, i) for n, m, i, d in extra])
         added = len(extra)
 
-    # 老的单库（itempanel.db）里有 fluid_container；三库拆分后 items.db 没有这张表，别硬拷
+    # 旧的单库（itempanel.db）里有 fluid_container；三库拆分后 items.db 没有这张表，不要直接复制
     has_fc = old.execute(
         "select count(*) from sqlite_master where type='table' and name='fluid_container'").fetchone()[0]
     if has_fc:
@@ -148,13 +148,13 @@ def main():
     print(f'清单 {len(rows)} 条，目标库 {db_path}')
 
     # 几万张图标要么原地 UPDATE（在 110MB 库上非常慢），要么整体重建一个新库再换掉。
-    # 这里走重建：按原表顺序流式拷贝，遇到 dump 里有图标的就换成新图，最后原子替换。
+    # 这里采用重建：按原表顺序流式复制，遇到 dump 里有图标的就换成新图，最后原子替换。
     if '--rebuild' in sys.argv:
         rebuild(dump_dir, db_path, rows, dry)
         return
 
     conn = sqlite3.connect(db_path)
-    # 几万次 BLOB 写入，必须显式事务 + 关同步，否则每行一次 fsync 要跑十几分钟
+    # 几万次 BLOB 写入，必须显式事务 + 关闭同步，否则每行一次 fsync 累计十几分钟
     conn.execute('PRAGMA synchronous=NORMAL')
     conn.execute('BEGIN')
     cur = conn.cursor()

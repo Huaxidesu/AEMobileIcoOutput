@@ -4,7 +4,7 @@
 用法：python tools/build_fluid_names.py <GregTech_zh_CN.lang> [fluids.db 路径]
 
 - `fluid_name(fluid, dname)`：fluid 是去掉 molten./plasma./liquid. 前缀的材料名（小写）
-- `fluid_container` 表（流体→容器物品）来自 NEI 的 fluidcontainer 导出，这个脚本不动它
+- `fluid_container` 表（流体→容器物品）来自 NEI 的 fluidcontainer 导出，本脚本不修改它
 """
 import io
 import re
